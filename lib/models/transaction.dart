@@ -30,4 +30,15 @@ class TransactionModel {
             ? DateTime.parse(m['transactionDate'])
             : DateTime.now(),
       );
+
+  Map<String, dynamic> toMap() => {
+        '_id': id,
+        'userId': userId,
+        'type': type,
+        'category': category,
+        'amount': amount,
+        'description': description,
+        'paymentMethod': paymentMethod,
+        'transactionDate': transactionDate.toIso8601String(),
+      };
 }

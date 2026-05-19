@@ -16,6 +16,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _businessCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _pwCtrl = TextEditingController();
+  String? _nameError;
+  String? _businessError;
+  String? _emailError;
+  String? _passwordError;
   bool _loading = false;
 
   @override
@@ -29,16 +33,20 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           child: Column(children: [
             TextFormField(
                 controller: _nameCtrl,
-                decoration: const InputDecoration(labelText: 'Full name')),
+                decoration: InputDecoration(
+                    labelText: 'Full name', errorText: _nameError)),
             TextFormField(
                 controller: _businessCtrl,
-                decoration: const InputDecoration(labelText: 'Business name')),
+                decoration: InputDecoration(
+                    labelText: 'Business name', errorText: _businessError)),
             TextFormField(
                 controller: _emailCtrl,
-                decoration: const InputDecoration(labelText: 'Email')),
+                decoration: InputDecoration(
+                    labelText: 'Email', errorText: _emailError)),
             TextFormField(
                 controller: _pwCtrl,
-                decoration: const InputDecoration(labelText: 'Password'),
+                decoration: InputDecoration(
+                    labelText: 'Password', errorText: _passwordError),
                 obscureText: true),
             const SizedBox(height: 16),
             _loading
@@ -51,6 +59,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       });
                       final messenger = ScaffoldMessenger.of(context);
                       try {
+                        // clear previous field errors
+                        setState(() {
+                          _nameError = null;
+                          _businessError = null;
+                          _emailError = null;
+                          _passwordError = null;
+                        });
                         await ref.read(authProvider.notifier).register(
                             _nameCtrl.text.trim(),
                             _businessCtrl.text.trim(),
@@ -59,8 +74,37 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         if (!mounted) return;
                         ref.read(appRouterProvider).go('/dashboard');
                       } catch (e) {
-                        messenger.showSnackBar(
-                            SnackBar(content: Text('Register failed: $e')));
+                        // Try to parse validation error details from Exception message
+                        final msg = e.toString();
+                        // Example message: "Exception: Validation failed: Password must be at least 8 chars; Email must be a valid email"
+                        if (msg.contains('Validation failed')) {
+                          final parts = msg.split(':');
+                          if (parts.length > 1) {
+                            final detail = parts.sublist(1).join(':').trim();
+                            final items =
+                                detail.split(';').map((s) => s.trim());
+                            for (final it in items) {
+                              final lower = it.toLowerCase();
+                              if (lower.contains('email')) {
+                                _emailError = it;
+                              } else if (lower.contains('password')) {
+                                _passwordError = it;
+                              } else if (lower.contains('name') ||
+                                  lower.contains('fullname')) {
+                                _nameError = it;
+                              } else if (lower.contains('business')) {
+                                _businessError = it;
+                              }
+                            }
+                            setState(() {});
+                          } else {
+                            messenger.showSnackBar(
+                                SnackBar(content: Text('Register failed: $e')));
+                          }
+                        } else {
+                          messenger.showSnackBar(
+                              SnackBar(content: Text('Register failed: $e')));
+                        }
                       } finally {
                         setState(() {
                           _loading = false;
@@ -73,5 +117,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _businessCtrl.dispose();
+    _emailCtrl.dispose();
+    _pwCtrl.dispose();
+    super.dispose();
   }
 }

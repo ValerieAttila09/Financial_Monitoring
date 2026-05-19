@@ -14,7 +14,7 @@ router.post('/register', [
   body('password').isLength({ min: 8 })
 ], async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+  if (!errors.isEmpty()) return res.status(400).json({ message: 'Validation failed', errors: errors.array() });
   try {
     const { fullname, businessName, email, password } = req.body;
     const existing = await User.findOne({ email });
@@ -36,7 +36,7 @@ router.post('/login', [
   body('password').notEmpty()
 ], async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+  if (!errors.isEmpty()) return res.status(400).json({ message: 'Validation failed', errors: errors.array() });
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });

@@ -47,8 +47,10 @@ class AuthNotifier extends StateNotifier<User?> {
 
   Future<void> login(String email, String password) async {
     final api = ref.read(apiServiceProvider);
-    final resp = await api
-        .post('/api/auth/login', {'email': email, 'password': password});
+    final resp = await api.post('/api/auth/login', {
+      'email': email.trim(),
+      'password': password,
+    });
     final data = resp.data;
     await _storage.write(key: 'jwt', value: data['token']);
     state = User.fromMap(data['user']);
@@ -58,10 +60,10 @@ class AuthNotifier extends StateNotifier<User?> {
       String password) async {
     final api = ref.read(apiServiceProvider);
     final resp = await api.post('/api/auth/register', {
-      'fullname': fullname,
-      'businessName': businessName,
-      'email': email,
-      'password': password
+      'fullname': fullname.trim(),
+      'businessName': businessName.trim(),
+      'email': email.trim(),
+      'password': password,
     });
     final data = resp.data;
     await _storage.write(key: 'jwt', value: data['token']);
