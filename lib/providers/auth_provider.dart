@@ -1,12 +1,31 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:io' show Platform;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../services/api_service.dart';
 import '../models/user.dart';
 
 final _storage = const FlutterSecureStorage();
 
-final apiServiceProvider =
-    Provider<ApiService>((ref) => ApiService('http://10.0.2.2:4000'));
+final apiServiceProvider = Provider<ApiService>((ref) {
+  // choose baseUrl depending on platform
+  String baseUrl = 'http://localhost:4000';
+  if (kIsWeb) {
+    baseUrl = 'http://localhost:4000';
+  } else {
+    try {
+      if (Platform.isAndroid) {
+        // Android emulator
+        baseUrl = 'http://10.0.2.2:4000';
+      } else {
+        baseUrl = 'http://localhost:4000';
+      }
+    } catch (_) {
+      baseUrl = 'http://localhost:4000';
+    }
+  }
+  return ApiService(baseUrl);
+});
 
 final authProvider = StateNotifierProvider<AuthNotifier, User?>(
   (ref) => AuthNotifier(ref),

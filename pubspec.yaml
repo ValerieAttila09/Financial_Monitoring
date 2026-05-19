@@ -15,7 +15,7 @@ dependencies:
   dio: ^5.2.1
   flutter_secure_storage: ^8.1.0
   shared_preferences: ^2.2.0
-  fl_chart: ^0.55.2
+  # fl_chart: ^1.2.0
   flutter_local_notifications: ^15.0.0
   intl: ^0.18.0
   material_design_icons_flutter: ^6.0.6595
@@ -28,6 +28,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  assets:
-    - assets/images/*
-    - assets/icons/*
+  # assets:
+  #   - assets/images/*
+  #   - assets/icons/*

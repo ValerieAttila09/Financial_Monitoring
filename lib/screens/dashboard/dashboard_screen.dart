@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
 
+// fl_chart temporarily disabled due to SDK constraints
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
@@ -35,13 +35,12 @@ class DashboardScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12)),
                 child: Padding(
                   padding: const EdgeInsets.all(12.0),
-                  child: LineChart(LineChartData(
-                    lineBarsData: [
-                      LineChartBarData(
-                          spots: [FlSpot(0, 1), FlSpot(1, 1.5), FlSpot(2, 1.4)],
-                          isCurved: true),
-                    ],
-                  )),
+                  child: Center(
+                    child: Text(
+                      'Grafik akan ditampilkan di sini\n(pindah ke fl_chart setelah upgrade SDK)',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 ),
               ),
             )
