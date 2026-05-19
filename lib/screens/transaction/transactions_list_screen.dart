@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:upsm_flutter/widgets/center_pill_fab.dart';
 import '../../providers/transactions_provider.dart';
 import '../../widgets/add_transaction_sheet.dart';
+import '../../widgets/bottom_nav.dart';
 
 String _formatCurrency(double value) {
   final s = value.toStringAsFixed(0);
@@ -136,6 +138,20 @@ class TransactionsListScreen extends ConsumerWidget {
                 },
               ),
       ),
+      floatingActionButton: CenterPillFab(
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (_) => const AddTransactionSheet(),
+          );
+        },
+        icon: Icons.add,
+        label: null,
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: const BottomNav(),
     );
   }
 }

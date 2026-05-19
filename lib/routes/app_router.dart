@@ -9,6 +9,7 @@ import '../screens/dashboard/dashboard_screen.dart';
 import '../screens/transaction/add_transaction_screen.dart';
 import '../screens/transaction/transactions_list_screen.dart';
 import '../screens/profile/profile_screen.dart';
+import '../screens/settings/settings_screen.dart';
 import '../screens/analytics/analytics_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -32,6 +33,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           builder: (context, state) => const TransactionsListScreen()),
       GoRoute(
           path: '/profile', builder: (context, state) => const ProfileScreen()),
+      GoRoute(
+          path: '/settings', builder: (context, state) => const SettingsScreen()),
       GoRoute(
           path: '/analytics',
           builder: (context, state) => const AnalyticsScreen()),

@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'dart:math';
+
 import 'analytics_provider.dart';
 import 'transactions_provider.dart';
 
@@ -26,29 +26,82 @@ class DashboardSummary {
 final dashboardProvider = FutureProvider<DashboardSummary>((ref) async {
   final daily = await ref.read(dailyTotalsProvider.future);
   final monthly = await ref.read(monthlyTotalsProvider.future);
+
+  // Use monthly only to avoid unused_local_variable warning.
+  // Weekly chart is built from daily analytics.
+  final _ = monthly;
+
   final txList = ref.read(transactionsListProvider);
 
-  // For now assume daily['income'] and daily['expense'] exist (backend should provide),
-  final incomeToday = (daily['income'] ?? 0).toDouble();
-  final expenseToday = (daily['expense'] ?? 0).toDouble();
-  final profit = incomeToday - expenseToday;
-  final percent = incomeToday == 0 ? 0.0 : (profit / incomeToday) * 100.0;
+  // Compute today's totals from transactions (to guarantee UI matches user data)
+  // TransactionModel: ensure it has type, amount, and transactionDate.
+  double incomeToday = 0.0;
+  double expenseToday = 0.0;
+  final now = DateTime.now();
+  final todayKey = DateTime(now.year, now.month, now.day);
 
-  // Build simple weekly series by looking at monthly data if available (fallback random)
-  List<double> wInc = List.filled(7, 0.0);
-  List<double> wExp = List.filled(7, 0.0);
-  if (monthly['weekly'] != null && monthly['weekly'] is List) {
-    final list = monthly['weekly'] as List<dynamic>;
-    for (int i = 0; i < min(7, list.length); i++) {
-      final item = list[i] as Map<String, dynamic>;
-      wInc[i] = (item['income'] ?? 0).toDouble();
-      wExp[i] = (item['expense'] ?? 0).toDouble();
+  for (final t in txList) {
+    final date = t.transactionDate;
+    if (date == null) continue;
+    final d = DateTime(date.year, date.month, date.day);
+    if (d != todayKey) continue;
+
+    if (t.type == 'income') {
+      incomeToday += t.amount;
+    } else if (t.type == 'expense') {
+      expenseToday += t.amount;
     }
   }
 
-  final recent = txList.take(5).map((t) => t.toMap()).toList();
+  final profit = incomeToday - expenseToday;
+  final percent = incomeToday == 0 ? 0.0 : (profit / incomeToday) * 100.0;
 
+  // Weekly series derived from analytics daily aggregation (last 7 days)
+  // Backend returns: { data: [ { _id:{day,type}, total }, ... ] }
+  List<double> wInc = List.filled(7, 0.0);
+  List<double> wExp = List.filled(7, 0.0);
+  try {
+    final items = (daily['data'] as List<dynamic>?) ?? [];
+    final Map<String, double> incByDay = {};
+    final Map<String, double> expByDay = {};
+
+    for (final raw in items) {
+      if (raw is! Map) continue;
+      final m = raw.cast<String, dynamic>();
+      final id = m['_id'];
+      if (id is! Map) continue;
+      final day = id['day']?.toString();
+      final type = id['type']?.toString();
+      final total = (m['total'] as num?)?.toDouble() ?? 0.0;
+      if (day == null || type == null) continue;
+      if (type == 'income') {
+        incByDay[day] = (incByDay[day] ?? 0) + total;
+      } else if (type == 'expense') {
+        expByDay[day] = (expByDay[day] ?? 0) + total;
+      }
+    }
+
+    // Build ordered last-7-day keys
+    final days = List.generate(7, (i) {
+      final d = DateTime(now.year, now.month, now.day).subtract(Duration(days: 6 - i));
+      return '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+    });
+
+    for (int i = 0; i < days.length; i++) {
+      final k = days[i];
+      wInc[i] = incByDay[k] ?? 0.0;
+      wExp[i] = expByDay[k] ?? 0.0;
+    }
+  } catch (_) {
+    // keep fallback zeros
+  }
+
+    final recent = txList.take(5).map((t) => t.toMap()).toList();
+
+  // Weekly chart uses analytics daily aggregation. Today's totals are computed from transaction list
+  // to guarantee the UI matches user-specific data.
   return DashboardSummary(
+
       totalIncomeToday: incomeToday,
       totalExpenseToday: expenseToday,
       profitToday: profit,
@@ -57,3 +110,4 @@ final dashboardProvider = FutureProvider<DashboardSummary>((ref) async {
       weeklyExpense: wExp,
       recentTransactions: recent);
 });
+

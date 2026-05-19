@@ -44,7 +44,7 @@ class _BottomNavState extends State<BottomNav> {
       shape: const CircularNotchedRectangle(),
       notchMargin: 8,
       child: Container(
-        height: 72,
+        height: 80,
         padding: const EdgeInsets.symmetric(horizontal: 8),
         decoration: BoxDecoration(
           color: Colors.white.withAlpha(230),
@@ -101,11 +101,11 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color color =
-        active ? Theme.of(context).colorScheme.primary : Colors.grey.shade600;
+        active ? Theme.of(context).colorScheme.primary : Colors.grey.shade900;
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           AnimatedContainer(
               duration: const Duration(milliseconds: 250),

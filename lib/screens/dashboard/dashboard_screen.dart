@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // analytics_provider not used directly here; dashboardProvider aggregates necessary data
 import '../../providers/dashboard_provider.dart';
+import '../../providers/transactions_provider.dart';
+
 import '../../widgets/animated_chart.dart';
 import '../../widgets/add_transaction_sheet.dart';
 import '../../widgets/bottom_nav.dart';
@@ -12,6 +14,9 @@ class DashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Force refresh so transaction list isn't empty when arriving after login.
+    ref.read(transactionsListProvider.notifier).fetch();
+
     final dashboard = ref.watch(dashboardProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Dashboard')),
