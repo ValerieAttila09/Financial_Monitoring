@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
+import '../utils/currency_input_formatter.dart';
 import '../providers/transactions_provider.dart';
 
 class AddTransactionSheet extends ConsumerStatefulWidget {
@@ -111,7 +112,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                       keyboardType: TextInputType.number,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
-                        CurrencyInputFormatter()
+                        CurrencyInputFormatter(locale: 'id_ID', symbol: '')
                       ],
                       validator: (v) => (_parseCurrency(v ?? '') <= 0)
                           ? 'Jumlah tidak valid'
@@ -131,28 +132,6 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
           ),
         ),
       ),
-    );
-  }
-}
-
-/// Input formatter that inserts thousand separators while typing.
-class CurrencyInputFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    final digits = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
-    if (digits.isEmpty) return newValue.copyWith(text: '');
-    // format with commas
-    final chars = digits.split('').reversed.toList();
-    final parts = <String>[];
-    for (var i = 0; i < chars.length; i += 3) {
-      parts.add(chars.skip(i).take(3).toList().reversed.join());
-    }
-    final result = parts.reversed.join(',');
-    // maintain cursor at end
-    return TextEditingValue(
-      text: result,
-      selection: TextSelection.collapsed(offset: result.length),
     );
   }
 }
